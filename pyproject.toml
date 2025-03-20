@@ -1,5 +1,5 @@
 [project]
-name = "de-personal-spotify"
+name = "personal-spotify"
 version = "0.1.0"
 description = ""
 authors = [
