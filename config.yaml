@@ -1,2 +1,5 @@
 storage:
   base_path: data
+  raw_zone: raw
+  processed_zone: processed
+  refined_zone: refined

@@ -6,10 +6,13 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
+from src.config.settings import Settings
+
 
 @dataclass
 class Process(ABC):
     name: str
+    settings: Settings
     logger: logging.Logger = field(init=False)
 
     def __post_init__(self):

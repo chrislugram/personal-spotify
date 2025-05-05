@@ -16,6 +16,9 @@ class EnvironmentSettings(BaseSettings):
 
 class StorageSettings(BaseModel):
     base_path: str
+    raw_zone: str
+    processed_zone: str
+    refined_zone: str
 
 
 class YamlSettings(BaseSettings):
