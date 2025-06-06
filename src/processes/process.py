@@ -5,6 +5,7 @@ This class is a base class for all processes
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from src.config.settings import Settings
 
@@ -28,9 +29,12 @@ class Process(ABC):
             self.logger.setLevel(logging.INFO)
 
     @abstractmethod
-    def run(self):
+    def run(self, execution_date: datetime):
         """
         Run the process
+
+        Args:
+            execution_date (datetime): Execution date
         """
         pass
 

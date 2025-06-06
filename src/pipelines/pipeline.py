@@ -6,6 +6,7 @@ Later will be change for an orchectrator
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import List
 
 from src.config.settings import Settings
@@ -44,9 +45,11 @@ class Pipeline(ABC):
         """
         Execute the list of process
         """
+        execution_date = datetime.now(timezone.utc)
+
         for process in self.processes:
             self.logger.info(f"Running {process.name}")
-            process.run()
+            process.run(execution_date)
 
             self.logger.info(f"Cleaning {process.name}")
             process.clean()
