@@ -21,6 +21,10 @@ class SpotifyService:
                 client_id=client_id,
                 client_secret=client_secret,
                 redirect_uri=uri,
+                scope="playlist-read-private"
+                "playlist-read-collaborative"
+                "playlist-modify-private"
+                "playlist-modify-public",
             )
         )
 
@@ -41,7 +45,16 @@ class SpotifyService:
         except Exception as e:
             print(f"Error calling {func.__name__}: {e}")
 
-    def get_playlists(self) -> Any:
+    def get_user(self) -> dict:
+        """
+        This method is used to get the user
+
+        Returns:
+            Any: The return value of the function
+        """
+        return self._safe_call(self.sp.current_user)
+
+    def get_playlists(self) -> dict:
         """
         This method is used to get the user's playlists
 
@@ -50,7 +63,7 @@ class SpotifyService:
         """
         return self._safe_call(self.sp.current_user_playlists)
 
-    def get_playlist(self, playlist_id: str) -> Any:
+    def get_playlist(self, playlist_id: str) -> dict:
         """
         This method is used to get a playlist
 
@@ -62,7 +75,7 @@ class SpotifyService:
         """
         return self._safe_call(self.sp.playlist, playlist_id)
 
-    def get_playlist_tracks(self, playlist_id: str) -> Any:
+    def get_playlist_tracks(self, playlist_id: str) -> dict:
         """
         This method is used to get the tracks in a playlist
 

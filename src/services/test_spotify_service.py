@@ -9,6 +9,27 @@ from src.services.spotify_service import SpotifyService
 
 
 class TestSpotifyService(unittest.TestCase):
+
+    @patch("src.services.spotify_service.Spotify")
+    def test_get_user_success(self, MockSpotify):
+        # Given
+        mock_spotify_instance = MagicMock()
+        MockSpotify.return_value = mock_spotify_instance
+
+        mock_spotify_instance.current_user.return_value = {"id": "user1"}
+
+        # When
+        service = SpotifyService(
+            client_id="test_client_id",
+            client_secret="test_client_secret",
+            uri="test_uri",
+        )
+        user = service.get_user()
+
+        # Then
+        self.assertIsNotNone(user)
+        self.assertEqual(user["id"], "user1")
+
     @patch("src.services.spotify_service.Spotify")
     def test_get_playlists_success(self, MockSpotify):
         # Given
