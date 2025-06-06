@@ -127,7 +127,8 @@ class SpotifyService:
         if len(artists_id) > 50:
             raise Exception("Max 50 artists")
 
-        return self._safe_call(self.sp.artists)["artists"]
+        response = self._safe_call(self.sp.artists, artists_id)
+        return response["artists"] if response else []
 
     def get_tracks(self, tracks_id: List[str]) -> List:
         """
@@ -142,4 +143,5 @@ class SpotifyService:
         if len(tracks_id) > 50:
             raise Exception("Max 50 tracks")
 
-        return self._safe_call(self.sp.tracks)["tracks"]
+        response = self._safe_call(self.sp.tracks)
+        return response["tracks"] if response else []
