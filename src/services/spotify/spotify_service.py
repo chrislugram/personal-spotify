@@ -21,10 +21,7 @@ class SpotifyService:
                 client_id=client_id,
                 client_secret=client_secret,
                 redirect_uri=uri,
-                scope="playlist-read-private"
-                "playlist-read-collaborative"
-                "playlist-modify-private"
-                "playlist-modify-public",
+                scope="playlist-read-private",
             )
         )
 
@@ -54,14 +51,36 @@ class SpotifyService:
         """
         return self._safe_call(self.sp.current_user)
 
-    def get_playlists(self) -> dict:
+    def get_playlists(self, limit: int = 50) -> dict:
         """
         This method is used to get the user's playlists
+
+        Args:
+            limit (int): The maximum number of items to return
 
         Returns:
             Any: The return value of the function
         """
-        return self._safe_call(self.sp.current_user_playlists)
+        playlists = []
+        offset = 0
+        while True:
+            response = self._safe_call(
+                self.sp.current_user_playlists, limit=limit, offset=offset
+            )
+
+            # Check if the response is valid
+            if not response or "items" not in response:
+                break
+
+            # Add the items to the list
+            playlists.extend(response["items"])
+
+            # Check if there are more items
+            if response["next"] is None:
+                break
+            offset += limit
+
+        return playlists
 
     def get_playlist(self, playlist_id: str) -> dict:
         """

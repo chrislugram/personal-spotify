@@ -31,7 +31,7 @@ class TestSpotifyService(unittest.TestCase):
         self.assertEqual(user["id"], "user1")
 
     @patch("src.services.spotify.spotify_service.Spotify")
-    def test_get_playlists_success(self, MockSpotify):
+    def test_get_playlists_success_without_next(self, MockSpotify):
         # Given
         mock_spotify_instance = MagicMock()
         MockSpotify.return_value = mock_spotify_instance
@@ -51,8 +51,43 @@ class TestSpotifyService(unittest.TestCase):
 
         # Then
         self.assertIsNotNone(playlists)
-        self.assertEqual(len(playlists["items"]), 1)
-        self.assertEqual(playlists["items"][0]["name"], "Playlist 1")
+        self.assertEqual(len(playlists), 1)
+        self.assertEqual(playlists[0]["name"], "Playlist 1")
+
+    @patch("src.services.spotify.spotify_service.Spotify")
+    def test_get_playlists_success_with_next(self, MockSpotify):
+        # Given
+        mock_spotify_instance = MagicMock()
+        MockSpotify.return_value = mock_spotify_instance
+
+        mock_spotify_instance.current_user_playlists.side_effect = [
+            {
+                "items": [
+                    {"name": "Playlist 1", "uri": "spotify:playlist:1"},
+                ],
+                "next": "next_page",
+            },
+            {
+                "items": [
+                    {"name": "Playlist 2", "uri": "spotify:playlist:2"},
+                ],
+                "next": None,
+            },
+        ]
+
+        # When
+        service = SpotifyService(
+            client_id="test_client_id",
+            client_secret="test_client_secret",
+            uri="test_uri",
+        )
+        playlists = service.get_playlists(limit=1)
+
+        # Then
+        self.assertIsNotNone(playlists)
+        self.assertEqual(len(playlists), 2)
+        self.assertEqual(playlists[0]["name"], "Playlist 1")
+        self.assertEqual(playlists[1]["name"], "Playlist 2")
 
     @patch("src.services.spotify.spotify_service.Spotify")
     def test_get_playlists_failure(self, MockSpotify):
@@ -73,7 +108,7 @@ class TestSpotifyService(unittest.TestCase):
         playlists = service.get_playlists()
 
         # Then
-        self.assertIsNone(playlists)
+        self.assertEqual(playlists, [])
 
     @patch("src.services.spotify.spotify_service.Spotify")
     def test_get_playlist_success(self, MockSpotify):
