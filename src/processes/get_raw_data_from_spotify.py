@@ -78,6 +78,7 @@ class GetRawDataFromSpotify(Process):
         """
         artists = []
         for i in range(0, len(artists), 50):
+            self.logger.info(f"Getting artists from {i} to {i + 50} of {len(artists)}")
             batch = artists[i : i + 50]
             artists.extend(self.spotify_service.get_artists(artists_id=batch))
 
@@ -97,6 +98,7 @@ class GetRawDataFromSpotify(Process):
         """
         tracks = []
         for i in range(0, len(tracks), 50):
+            self.logger.info(f"Getting tracks from {i} to {i + 50} of {len(tracks)}")
             batch = tracks[i : i + 50]
             tracks.extend(self.spotify_service.get_tracks(tracks_id=batch))
 
@@ -130,9 +132,27 @@ class GetRawDataFromSpotify(Process):
         )
         self.logger.info(f"Playlist {playlist_name} downloaded, total {len(tracks)}")
 
+        # TODO: Continue here
         for track in tracks:
-            tracks_ids.add(track["id"])
-            artists_ids.add(track["artists"][0]["id"])
+            if track is None:
+                continue
+
+            if "id" in track["track"].keys():
+                tracks_ids.add(track["track"]["id"])
+            else:
+                self.logger.warning(
+                    f"Track {track['track']} does not have an id, skipping..."
+                )
+
+            if (
+                "artists" in track["track"].keys()
+                and len(track["track"]["artists"]) > 0
+            ):
+                artists_ids.add(track["track"]["artists"][0]["id"])
+            else:
+                self.logger.warning(
+                    f"Track {track['track']} does not have an artist, skipping..."
+                )
 
         return artists_ids, tracks_ids
 
