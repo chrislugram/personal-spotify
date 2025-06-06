@@ -3,7 +3,7 @@ This class is responsible for consuming the Spotify API
 """
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, List
 
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
@@ -51,7 +51,7 @@ class SpotifyService:
         """
         return self._safe_call(self.sp.current_user)
 
-    def get_playlists(self, limit: int = 50) -> dict:
+    def get_playlists(self, limit: int = 50) -> List:
         """
         This method is used to get the user's playlists
 
@@ -82,26 +82,64 @@ class SpotifyService:
 
         return playlists
 
-    def get_playlist(self, playlist_id: str) -> dict:
-        """
-        This method is used to get a playlist
-
-        Args:
-            playlist_id (str): The id of the playlist
-
-        Returns:
-            Any: The return value of the function
-        """
-        return self._safe_call(self.sp.playlist, playlist_id)
-
-    def get_playlist_tracks(self, playlist_id: str) -> dict:
+    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List:
         """
         This method is used to get the tracks in a playlist
 
         Args:
             playlist_id (str): The id of the playlist
+            limit (int): The maximum number of items to return
 
         Returns:
             Any: The return value of the function
         """
-        return self._safe_call(self.sp.playlist_tracks, playlist_id)
+        items = []
+        offset = 0
+        while True:
+            response = self._safe_call(
+                self.sp.playlist_items, playlist_id, limit=limit, offset=offset
+            )
+
+            # Check if the response is valid
+            if not response or "items" not in response:
+                break
+
+            # Add the items to the list
+            items.extend(response["items"])
+
+            # Check if there are more items
+            if response["next"] is None:
+                break
+            offset += 100
+
+        return items
+
+    def get_artists(self, artists_id: List[str]) -> List:
+        """
+        This method is used to get the artist
+
+        Args:
+            artist_id (str): The id of the artist (Max 50)
+
+        Returns:
+            Any: The return value of the function
+        """
+        if len(artists_id) > 50:
+            raise Exception("Max 50 artists")
+
+        return self._safe_call(self.sp.artists)["artists"]
+
+    def get_tracks(self, tracks_id: List[str]) -> List:
+        """
+        This method is used to get the track
+
+        Args:
+            track_id (str): The id of the track (Max 50)
+
+        Returns:
+            Any: The return value of the function
+        """
+        if len(tracks_id) > 50:
+            raise Exception("Max 50 tracks")
+
+        return self._safe_call(self.sp.tracks)["tracks"]
