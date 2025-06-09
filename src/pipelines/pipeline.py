@@ -1,19 +1,23 @@
 """
-This class is a base class for all processes
+This is a base class for pipelines
+Later will be change for an orchectrator
 """
 
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import List
 
 from src.config.settings import Settings
+from src.processes.process import Process
 
 
 @dataclass
-class Process(ABC):
+class Pipeline(ABC):
     name: str
     settings: Settings
+    processes: List[Process] = field(init=False)
     logger: logging.Logger = field(init=False)
 
     def __post_init__(self):
@@ -28,19 +32,24 @@ class Process(ABC):
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
 
-    @abstractmethod
-    def run(self, execution_date: datetime):
-        """
-        Run the process
+        self.initialize()
 
-        Args:
-            execution_date (datetime): Execution date
+    @abstractmethod
+    def initialize(self):
+        """
+        Initialize the pipeline, create steps here
         """
         pass
 
-    @abstractmethod
-    def clean(self):
+    def execute(self):
         """
-        Clean the process
+        Execute the list of process
         """
-        pass
+        execution_date = datetime.now(timezone.utc)
+
+        for process in self.processes:
+            self.logger.info(f"Running {process.name}")
+            process.run(execution_date)
+
+            self.logger.info(f"Cleaning {process.name}")
+            process.clean()

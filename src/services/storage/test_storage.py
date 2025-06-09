@@ -8,7 +8,7 @@ from pathlib import Path
 
 from cloudpathlib import AnyPath
 
-from src.storage.storage import Storage
+from src.services.storage.storage import Storage
 
 
 class TestStorage(unittest.TestCase):
