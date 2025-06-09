@@ -143,5 +143,5 @@ class SpotifyService:
         if len(tracks_id) > 50:
             raise Exception("Max 50 tracks")
 
-        response = self._safe_call(self.sp.tracks)
+        response = self._safe_call(self.sp.tracks, tracks_id)
         return response["tracks"] if response else []
