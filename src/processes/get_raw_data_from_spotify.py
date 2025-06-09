@@ -10,6 +10,7 @@ from typing import List, Tuple
 from src.processes.process import Process
 from src.services.spotify.spotify_service import SpotifyService
 from src.services.storage.storage import Storage
+from src.utils.extra_decorators import time_it
 
 
 @dataclass
@@ -43,11 +44,37 @@ class GetRawDataFromSpotify(Process):
         )
 
         # Get all playlists from spotify
-        playlists = self._get_all_playlists(
+        playlist = self._get_all_playlists(
             raw_data_relative_path=raw_data_relative_path
         )
 
         # Get complete tracks for each playlist
+        all_artists, all_tracks = self._get_each_playlist(
+            playlists=playlist, raw_data_relative_path=raw_data_relative_path
+        )
+
+        # Get all artists from spotify
+        self._get_artists(
+            artist_ids=list(all_artists), raw_data_relative_path=raw_data_relative_path
+        )
+
+        # Get all tracks from spotify
+        self._get_tracks(
+            tracks_ids=list(all_tracks), raw_data_relative_path=raw_data_relative_path
+        )
+
+    @time_it
+    def _get_each_playlist(self, playlists: List, raw_data_relative_path: str) -> Tuple:
+        """
+        Download each playlist from spotify
+
+        Args:
+            playlists (List): The list of playlists
+            raw_data_relative_path (str): The relative path to the raw data
+
+        Returns:
+            Tuple[List[str], List[str]]: The list of artists and tracks
+        """
         all_artists = set()
         all_tracks = set()
         for playlist in playlists:
@@ -59,27 +86,25 @@ class GetRawDataFromSpotify(Process):
             all_artists.update(artists)
             all_tracks.update(tracks)
 
-        # Get all artists from spotify
-        self._get_artists(
-            artists=all_artists, raw_data_relative_path=raw_data_relative_path
-        )
+        self.logger.info(f"Artists collected, total {len(all_artists)}")
+        self.logger.info(f"Tracks collected, total {len(all_tracks)}")
 
-        # Get all tracks from spotify
-        self._get_tracks(
-            tracks=all_tracks, raw_data_relative_path=raw_data_relative_path
-        )
+        return all_artists, all_tracks
 
-    def _get_artists(self, artists: List[str], raw_data_relative_path: str) -> None:
+    @time_it
+    def _get_artists(self, artist_ids: List[str], raw_data_relative_path: str) -> None:
         """
         Get an artist
 
         Args:
-            artist_id (str): The id of the artist
+            artist_ids (str): A list of artist ids
         """
         artists = []
-        for i in range(0, len(artists), 50):
-            self.logger.info(f"Getting artists from {i} to {i + 50} of {len(artists)}")
-            batch = artists[i : i + 50]
+        for i in range(0, len(artist_ids), 50):
+            self.logger.info(
+                f"Getting artists from {i} to {i + 50} of {len(artist_ids)}"
+            )
+            batch = artist_ids[i : i + 50]
             artists.extend(self.spotify_service.get_artists(artists_id=batch))
 
         for artist in artists:
@@ -89,17 +114,22 @@ class GetRawDataFromSpotify(Process):
                 data=artist_bytes,
             )
 
-    def _get_tracks(self, tracks: List[str], raw_data_relative_path: str) -> None:
+        self.logger.info(f"Artists downloaded, total {len(artist_ids)}")
+
+    @time_it
+    def _get_tracks(self, tracks_ids: List[str], raw_data_relative_path: str) -> None:
         """
         Get a track
 
         Args:
-            track_id (str): The id of the track
+            tracks_ids (str): A list of track ids
         """
         tracks = []
-        for i in range(0, len(tracks), 50):
-            self.logger.info(f"Getting tracks from {i} to {i + 50} of {len(tracks)}")
-            batch = tracks[i : i + 50]
+        for i in range(0, len(tracks_ids), 50):
+            self.logger.info(
+                f"Getting tracks from {i} to {i + 50} of {len(tracks_ids)}"
+            )
+            batch = tracks_ids[i : i + 50]
             tracks.extend(self.spotify_service.get_tracks(tracks_id=batch))
 
         for track in tracks:
@@ -108,6 +138,8 @@ class GetRawDataFromSpotify(Process):
                 relative_path=raw_data_relative_path + f"/tracks/{track['id']}.json",
                 data=track_bytes,
             )
+
+        self.logger.info(f"Tracks downloaded, total {len(tracks_ids)}")
 
     def _get_tracks_of_playlist(
         self, playlist_id: str, playlist_name: str, raw_data_relative_path: str
@@ -132,30 +164,34 @@ class GetRawDataFromSpotify(Process):
         )
         self.logger.info(f"Playlist {playlist_name} downloaded, total {len(tracks)}")
 
-        # TODO: Continue here
         for track in tracks:
-            if track is None:
-                continue
+            try:
+                if track is None or track["track"] is None:
+                    self.logger.warning("Track is None, skipping...")
+                    continue
 
-            if "id" in track["track"].keys():
-                tracks_ids.add(track["track"]["id"])
-            else:
-                self.logger.warning(
-                    f"Track {track['track']} does not have an id, skipping..."
-                )
+                if "id" in track["track"].keys():
+                    tracks_ids.add(track["track"]["id"])
+                else:
+                    self.logger.warning(
+                        f"Track {track['track']} does not have an id, skipping..."
+                    )
 
-            if (
-                "artists" in track["track"].keys()
-                and len(track["track"]["artists"]) > 0
-            ):
-                artists_ids.add(track["track"]["artists"][0]["id"])
-            else:
-                self.logger.warning(
-                    f"Track {track['track']} does not have an artist, skipping..."
-                )
+                if (
+                    "artists" in track["track"].keys()
+                    and len(track["track"]["artists"]) > 0
+                ):
+                    artists_ids.add(track["track"]["artists"][0]["id"])
+                else:
+                    self.logger.warning(
+                        f"Track {track['track']} does not have an artist, skipping..."
+                    )
+            except Exception as e:
+                self.logger.error(f"Error getting track {track}: {e}")
 
         return artists_ids, tracks_ids
 
+    @time_it
     def _get_all_playlists(self, raw_data_relative_path: str) -> List:
         """
         Get all playlists
