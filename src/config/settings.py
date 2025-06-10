@@ -12,6 +12,7 @@ class EnvironmentSettings(BaseSettings):
     SPOTIFY_CLIENT_ID: str
     SPOTIFY_CLIENT_SECRET: str
     SPOTIFY_URI: str
+    SPOTIFY_REFRESH_TOKEN: str
 
 
 class StorageSettings(BaseModel):
