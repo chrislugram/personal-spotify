@@ -19,8 +19,8 @@ class TestExtractDataSpotify(unittest.TestCase):
         self.settings.yaml_settings.storage.raw_zone = "raw"
 
         with (
-            patch("src.processes.get_raw_data_from_spotify.SpotifyService"),
-            patch("src.processes.get_raw_data_from_spotify.Storage"),
+            patch("src.processes.extract_data_spotify.SpotifyService"),
+            patch("src.processes.extract_data_spotify.Storage"),
         ):
             self.process = GetExtractDataSpotify(
                 name="spotify_raw", settings=self.settings
