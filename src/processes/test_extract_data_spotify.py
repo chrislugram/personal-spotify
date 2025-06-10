@@ -2,12 +2,12 @@ import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
-from src.processes.get_raw_data_from_spotify import GetRawDataFromSpotify
+from src.processes.extract_data_spotify import GetExtractDataSpotify
 from src.services.spotify.spotify_service import SpotifyService
 from src.services.storage.storage import Storage
 
 
-class TestGetRawDataFromSpotify(unittest.TestCase):
+class TestExtractDataSpotify(unittest.TestCase):
     def setUp(self):
         self.settings = MagicMock()
         self.settings.environment_settings = MagicMock()
@@ -19,10 +19,10 @@ class TestGetRawDataFromSpotify(unittest.TestCase):
         self.settings.yaml_settings.storage.raw_zone = "raw"
 
         with (
-            patch("src.processes.get_raw_data_from_spotify.SpotifyService"),
-            patch("src.processes.get_raw_data_from_spotify.Storage"),
+            patch("src.processes.extract_data_spotify.SpotifyService"),
+            patch("src.processes.extract_data_spotify.Storage"),
         ):
-            self.process = GetRawDataFromSpotify(
+            self.process = GetExtractDataSpotify(
                 name="spotify_raw", settings=self.settings
             )
             self.process.spotify_service = MagicMock(spec=SpotifyService)
