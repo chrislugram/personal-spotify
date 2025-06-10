@@ -15,15 +15,27 @@ class SpotifyService:
     This class is responsible for consuming the Spotify API
     """
 
-    def __init__(self, client_id: str, client_secret: str, uri: str):
-        self.sp = Spotify(
-            auth_manager=SpotifyOAuth(
+    def __init__(
+        self, client_id: str, client_secret: str, uri: str, refresh_token: str = None
+    ):
+        if not refresh_token:
+            self.sp = Spotify(
+                auth_manager=SpotifyOAuth(
+                    client_id=client_id,
+                    client_secret=client_secret,
+                    redirect_uri=uri,
+                    scope="playlist-read-private",
+                )
+            )
+        else:
+            auth_manager = SpotifyOAuth(
                 client_id=client_id,
                 client_secret=client_secret,
                 redirect_uri=uri,
                 scope="playlist-read-private",
             )
-        )
+            auth_manager.refresh_access_token(refresh_token)
+            self.sp = Spotify(auth_manager=auth_manager)
 
     def _safe_call(self, func, *args, **kwargs) -> Any:
         """

@@ -29,6 +29,7 @@ class GetRawDataFromSpotify(Process):
             client_id=self.settings.environment_settings.SPOTIFY_CLIENT_ID,
             client_secret=self.settings.environment_settings.SPOTIFY_CLIENT_SECRET,
             uri=self.settings.environment_settings.SPOTIFY_URI,
+            refresh_token=self.settings.environment_settings.SPOTIFY_REFRESH_TOKEN,
         )
         self.storage = Storage(base_path=self.settings.yaml_settings.storage.base_path)
 
