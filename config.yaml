@@ -3,3 +3,7 @@ storage:
   raw_zone: raw
   processed_zone: processed
   refined_zone: refined
+
+huggingface:
+  maharshipandya: hf://datasets/maharshipandya/spotify-tracks-dataset/dataset.csv
+  khepplewhite: hf://datasets/khepplewhite/SpotifyData/final.csv

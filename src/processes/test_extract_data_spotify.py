@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
-from src.processes.extract_data_spotify import GetExtractDataSpotify
+from src.processes.extract_data_spotify import ExtractDataSpotify
 from src.services.spotify.spotify_service import SpotifyService
 from src.services.storage.storage import Storage
 
@@ -22,7 +22,7 @@ class TestExtractDataSpotify(unittest.TestCase):
             patch("src.processes.extract_data_spotify.SpotifyService"),
             patch("src.processes.extract_data_spotify.Storage"),
         ):
-            self.process = GetExtractDataSpotify(
+            self.process = ExtractDataSpotify(
                 name="spotify_raw", settings=self.settings
             )
             self.process.spotify_service = MagicMock(spec=SpotifyService)

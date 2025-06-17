@@ -14,7 +14,7 @@ from src.utils.extra_decorators import time_it
 
 
 @dataclass
-class GetExtractDataSpotify(Process):
+class ExtractDataSpotify(Process):
     """
     This class is responsible for getting the raw data from spotify
     """
