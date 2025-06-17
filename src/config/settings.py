@@ -22,9 +22,15 @@ class StorageSettings(BaseModel):
     refined_zone: str
 
 
+class HugginfaceSettings(BaseModel):
+    maharshipandya: str
+    khepplewhite: str
+
+
 class YamlSettings(BaseSettings):
     model_config = SettingsConfigDict(yaml_file="config.yaml")
     storage: StorageSettings
+    huggingface: HugginfaceSettings
 
     @classmethod
     def settings_customise_sources(
