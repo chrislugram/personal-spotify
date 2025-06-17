@@ -2,8 +2,12 @@
 This class is the main class for the storage of the data
 """
 
+from io import BytesIO
 from typing import List
 
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from cloudpathlib import AnyPath
 
 
@@ -36,6 +40,20 @@ class Storage:
         complete_path.parent.mkdir(parents=True, exist_ok=True)
         complete_path.write_bytes(data)
 
+    def save_dataframe(self, relative_path: str, dataframe):
+        """
+        Save the dataframe in the storage
+
+        Args:
+            relaative_path (str): The relative path to the file
+            dataframe (pd.DataFrame): The dataframe to save
+        """
+        buffer = BytesIO()
+        table = pa.Table.from_pandas(dataframe)
+        pq.write_table(table, buffer)
+        buffer.seek(0)
+        self.save(relative_path, buffer.read())
+
     def load(self, relative_path: str) -> bytes:
         """
         Load the data from the storage
@@ -47,6 +65,20 @@ class Storage:
             bytes: The data
         """
         return self._absolute_path(relative_path).read_bytes()
+
+    def load_dataframe(self, relative_path: str) -> pd.DataFrame:
+        """
+        Load the dataframe from the storage
+
+        Args:
+            relative_path (str): The relative path to the file
+
+        Returns:
+            pd.DataFrame: The dataframe
+        """
+        buffer = BytesIO(self.load(relative_path))
+        table = pq.read_table(buffer)
+        return table.to_pandas()
 
     def exists(self, relative_path: str) -> bool:
         """

@@ -6,6 +6,7 @@ import shutil
 import unittest
 from pathlib import Path
 
+import pandas as pd
 from cloudpathlib import AnyPath
 
 from src.services.storage.storage import Storage
@@ -132,3 +133,30 @@ class TestStorage(unittest.TestCase):
 
         # Then
         self.assertEqual(files, ["test_relative_path.txt"])
+
+    def test_save_dataframe(self):
+        # Given
+        storage = Storage(self.base_path)
+        relative_path = "test_relative_path.parquet"
+        dataframe = pd.DataFrame({"col1": [1, 2], "col2": [3, 4]})
+
+        # When
+        storage.save_dataframe(relative_path, dataframe)
+
+        # Then
+        saved_dataframe = pd.read_parquet(storage._absolute_path(relative_path))
+        pd.testing.assert_frame_equal(saved_dataframe, dataframe)
+
+    def test_load_dataframe(self):
+        # Given
+        storage = Storage(self.base_path)
+        self.base_path.mkdir(parents=True, exist_ok=True)
+        relative_path = self.base_path / "test_relative_path.parquet"
+        dataframe = pd.DataFrame({"col1": [1, 2], "col2": [3, 4]})
+        dataframe.to_parquet(relative_path)
+
+        # When
+        loaded_dataframe = storage.load_dataframe(relative_path)
+
+        # Then
+        pd.testing.assert_frame_equal(loaded_dataframe, dataframe)
