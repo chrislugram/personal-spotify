@@ -11,7 +11,6 @@ from src.services.storage.storage import Storage
 class TestExtractDataHuggingFace(unittest.TestCase):
     def setUp(self):
         # Mock settings
-
         self.settings = MagicMock()
         self.settings.yaml_settings = MagicMock()
         self.settings.yaml_settings.storage = MagicMock()
